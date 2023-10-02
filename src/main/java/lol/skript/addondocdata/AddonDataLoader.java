@@ -33,35 +33,9 @@ public class AddonDataLoader {
         loadAnnotated();
     }
 
-    public boolean isInAddon(SyntaxElementInfo<? extends SyntaxElement> element) {
-        return element.getElementClass().getPackageName().startsWith(this.addonPackage);
+    public boolean isInAddon(Class<? extends SyntaxElement> c) {
+        return c.getPackageName().startsWith(this.addonPackage);
     }
-
-//    private void loadEvents() {
-//        List<SkriptEventInfo<?>> events = Skript.getEvents().stream().filter(this::isInAddon).toList();
-//        for (SkriptEventInfo<?> event : events) {
-//            syntaxes.add(new DocSyntaxInfo(
-//                    SyntaxType.EVENT, addonName,
-//                    event.getName(), event.getDescription(), event.getExamples(),
-//                    event.getSince(), event.getRequiredPlugins(), event.getKeywords(),
-//                    null, null
-//            ));
-//        }
-//    }
-//
-//    private void loadConditions() {
-//        List<SyntaxElementInfo<? extends Condition>> conditions = Skript.getConditions().stream().filter(this::isInAddon).toList();
-//        for (SyntaxElementInfo<? extends Condition> condition : conditions) {
-//            syntaxes.add(new DocSyntaxInfo(
-//                    SyntaxType.EVENT, addonName,
-//                    condition.getName(), condition.getDescription(), condition.getExamples(),
-//                    condition.getSince(), condition.getRequiredPlugins(), condition.getKeywords(),
-//                    null, null
-//            ));
-//        }
-//    }
-
-    // annotated elements are: structures, expressions, effects, conditions, sections
 
     private void loadAnnotated() {
         // Structures (TODO need to uncomment when 2.7 is standard!!)
@@ -74,28 +48,28 @@ public class AddonDataLoader {
         // Expressions
         for (Iterator<ExpressionInfo<?, ?>> it = Skript.getExpressions(); it.hasNext(); ) {
             SyntaxElementInfo<? extends Expression> expr = it.next();
-            if (!expr.c.getPackageName().startsWith(addonPackage)) continue;
+            if (!isInAddon(expr.c)) continue;
             if (expr.c.getAnnotation(NoDoc.class) != null) continue;
             loadAnnotatedSingle(SyntaxType.EXPRESSION, expr);
         }
 
         // Effects
         for (SyntaxElementInfo<? extends Effect> effect : Skript.getEffects()) {
-            if (!effect.c.getPackageName().startsWith(addonPackage)) continue;
+            if (!isInAddon(effect.c)) continue;
             if (effect.c.getAnnotation(NoDoc.class) != null) continue;
             loadAnnotatedSingle(SyntaxType.EFFECT, effect);
         }
 
         // Conditions
         for (SyntaxElementInfo<? extends Condition> condition : Skript.getConditions()) {
-            if (!condition.c.getPackageName().startsWith(addonPackage)) continue;
+            if (!isInAddon(condition.c)) continue;
             if (condition.c.getAnnotation(NoDoc.class) != null) continue;
             loadAnnotatedSingle(SyntaxType.CONDITION, condition);
         }
 
         // Sections
         for (SyntaxElementInfo<? extends Section> section : Skript.getSections()) {
-            if (!section.c.getPackageName().startsWith(addonPackage)) continue;
+            if (!isInAddon(section.c)) continue;
             if (section.c.getAnnotation(NoDoc.class) != null) continue;
             loadAnnotatedSingle(SyntaxType.SECTION, section);
         }

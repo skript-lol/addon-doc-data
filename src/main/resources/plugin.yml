@@ -2,3 +2,11 @@ name: AddonDocData
 version: '${version}'
 main: lol.skript.addondocdata.ADDMain
 api-version: '1.20'
+depend: [Skript]
+
+commands:
+  addondocdata:
+    description: Generates json data from an addon
+    usage: "Usage: /addondocdata <plugin_name>"
+    permission: addondocdata.generate
+    permission-message: You don't have permission to execute that command!

@@ -1,0 +1,4 @@
+name: AddonDocData
+version: '${version}'
+main: lol.skript.addondocdata.ADDMain
+api-version: '1.20'

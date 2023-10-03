@@ -1,11 +1,14 @@
 package lol.skript.addondocdata;
 
 import ch.njol.skript.Skript;
+import ch.njol.skript.classes.ClassInfo;
 import ch.njol.skript.doc.*;
 import ch.njol.skript.lang.*;
+import ch.njol.skript.registrations.Classes;
 import lol.skript.addondocdata.syntax.DocSyntaxInfo;
 import lol.skript.addondocdata.syntax.SyntaxType;
 import org.bukkit.plugin.Plugin;
+import org.jetbrains.annotations.Nullable;
 import org.skriptlang.skript.lang.structure.Structure;
 import org.skriptlang.skript.lang.structure.StructureInfo;
 
@@ -31,10 +34,16 @@ public class AddonDataLoader {
         this.addonPlugin = addonPlugin;
         this.addonPackage = addonPlugin.getClass().getPackageName();
         loadAnnotated();
+        loadEvents();
+        loadTypes();
     }
 
     public boolean isInAddon(Class<? extends SyntaxElement> c) {
-        return c.getPackageName().startsWith(this.addonPackage);
+        return isInAddon(c.getPackageName());
+    }
+
+    public boolean isInAddon(String packageName) {
+        return packageName.startsWith(this.addonPackage);
     }
 
     private void loadAnnotated() {
@@ -72,6 +81,73 @@ public class AddonDataLoader {
             if (!isInAddon(section.c)) continue;
             if (section.c.getAnnotation(NoDoc.class) != null) continue;
             loadAnnotatedSingle(SyntaxType.SECTION, section);
+        }
+    }
+
+    private void loadEvents() {
+        for (SkriptEventInfo<?> event : Skript.getEvents()) {
+            if (!isInAddon(event.c)) continue;
+            if (event.c.getAnnotation(NoDoc.class) != null) continue;
+            List<String> exceptions = new ArrayList<>();
+            List<String> warns = new ArrayList<>();
+
+            String name = event.getName();
+            String[] description = event.getDescription();
+            String[] examples = event.getExamples();
+            String since = event.getSince();
+            String[] requirements = event.getRequiredPlugins();
+
+            if (description.length == 0) {
+                exceptions.add("description");
+            }
+            if (examples.length == 0) {
+                warns.add("examples");
+            }
+            if (since == null) {
+                warns.add("since");
+            }
+
+            if (!exceptions.isEmpty()) {
+                ADDMain.logger().severe("Event " + event.c.getSimpleName() + " was not loaded because it was missing: " + String.join(", ", exceptions));
+                return;
+            }
+            if (!warns.isEmpty()) {
+                ADDMain.logger().warning("Event " + event.c.getSimpleName() + " was loaded, but was missing helpful values: " + String.join(", ", warns));
+            }
+
+            DocSyntaxInfo syntax = new DocSyntaxInfo(SyntaxType.EVENT, this.addonName, event.c.getSimpleName(), name, description, examples, since, requirements, null, null);
+            syntaxes.add(syntax);
+        }
+    }
+
+    @SuppressWarnings("ConstantValue")
+    private void loadTypes() {
+        for (ClassInfo<?> type : Classes.getClassInfos()) {
+            if (!isInAddon(type.getC().getPackageName())) continue;
+            if (type.getC().getAnnotation(NoDoc.class) != null) continue;
+            if (!type.hasDocs()) continue;
+            List<String> exceptions = new ArrayList<>();
+            List<String> warns = new ArrayList<>();
+
+            String name = type.getDocName();
+            String[] description = type.getDescription();
+            String[] examples = type.getExamples();
+            String since = type.getSince();
+            String[] requirements = type.getRequiredPlugins();
+            String[] typeUsage = type.getUsage();
+
+            if (description == null || description.length == 0) {
+                exceptions.add("description");
+            }
+            if (examples == null || examples.length == 0) {
+                warns.add("examples");
+            }
+            if (since == null) {
+                warns.add("since");
+            }
+
+            DocSyntaxInfo syntax = new DocSyntaxInfo(SyntaxType.TYPE, this.addonName, type.getC().getSimpleName(), name, description, examples, since, requirements, null, typeUsage);
+            syntaxes.add(syntax);
         }
     }
 

@@ -8,12 +8,8 @@ import ch.njol.skript.registrations.Classes;
 import lol.skript.addondocdata.syntax.DocSyntaxInfo;
 import lol.skript.addondocdata.syntax.SyntaxType;
 import org.bukkit.plugin.Plugin;
-import org.jetbrains.annotations.Nullable;
-import org.skriptlang.skript.lang.structure.Structure;
-import org.skriptlang.skript.lang.structure.StructureInfo;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
 
